@@ -22,14 +22,17 @@ def create_holiday_mask(index: DatetimeIndex, location: Location) -> Series:
     Series[bool]
         True where timestamp is public holiday.
     """
-    years = index.year.unique()
+    original_index = index.copy()
+
+    years = original_index.year.unique()
     country_holidays = holidays.country_holidays(
         country=location.country_code, subdiv=location.subdivision, years=years
     )
     country_holidays = pd.to_datetime(list(country_holidays))
+    index = original_index.tz_localize(None)
     is_holiday = index.normalize().isin(country_holidays)
 
-    return Series(is_holiday, index=index)
+    return Series(is_holiday, index=original_index)
 
 
 def create_weekend_mask(index: DatetimeIndex) -> Series:

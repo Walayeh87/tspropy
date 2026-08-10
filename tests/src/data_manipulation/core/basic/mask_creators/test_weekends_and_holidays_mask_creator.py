@@ -18,9 +18,13 @@ from src.data_manipulation.custom_objects.location import Location
             Series([True, False], index=pd.to_datetime(["2024-01-01", "2024-01-02"]), dtype=bool),
         ),
         (
-            pd.to_datetime(["2024-01-01", "2024-01-02"]),
+            pd.date_range(start="2024-01-01", end="2024-01-02", freq="D", tz="UTC"),
             Location(country_code="DE", subdivision="Thüringen"),
-            Series([True, False], index=pd.to_datetime(["2024-01-01", "2024-01-02"]), dtype=bool),
+            Series(
+                [True, False],
+                index=pd.date_range(start="2024-01-01", end="2024-01-02", freq="D", tz="UTC"),
+                dtype=bool,
+            ),
         ),
         (
             pd.to_datetime([]),
