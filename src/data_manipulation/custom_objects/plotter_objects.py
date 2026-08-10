@@ -295,7 +295,7 @@ class FontSizes:
 @dataclass
 class VLineConfig:
     position: DatetimeIndex
-    property: dict[VLinePropertyName, Color | Style | LineWidth]
+    property: dict[VLinePropertyName, Color | Style | LineWidth] | None = None
 
     def __post_init__(self) -> None:
         if isinstance(self.property, dict):
