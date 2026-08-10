@@ -386,6 +386,12 @@ def _validate_params(
     color_mappers: list[ColorMapper],
     range_configs: list[RangeConfig],
 ) -> None:
+    if len(axes.y1 + axes.y2 + axes.y3) > len(list(Color)):
+        raise ValueError(
+            f"plot_datetime_data can only plot {len(list(Color))} curves."
+            f" Provided curves: {len(axes.y1 + axes.y2 + axes.y3)}"
+        )
+
     for y in [axes.y1 + axes.y2 + axes.y3]:
         for col in y:
             if col not in df.columns:
