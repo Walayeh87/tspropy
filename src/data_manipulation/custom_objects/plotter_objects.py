@@ -15,14 +15,14 @@ class Color(Enum):
     BLUE = auto()
     RED = auto()
     GREEN = auto()
-    CYAN = auto()
-    ORANGE = auto()
-    MAGENTA = auto()
-    YELLOW = auto()
     BROWN = auto()
     PURPLE = auto()
+    ORANGE = auto()
+    MAGENTA = auto()
     CORAL = auto()
     FUCHSIA = auto()
+    CYAN = auto()
+    YELLOW = auto()
     LIGHTGRAY = auto()
 
 
