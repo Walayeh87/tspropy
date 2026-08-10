@@ -818,10 +818,6 @@ def _highlight_range(range_configs: list[RangeConfig], y1_lim: YLimit, index: Da
             )
             shapes.append(mask_range_shapes)
 
-            logger.info(
-                "Only phases that consist of at least 2 consecutive points that meet the condition are highlighted."
-            )
-
         else:
             raise NotImplementedError(
                 f"The range type {range_config.range_type} is not implemented."
