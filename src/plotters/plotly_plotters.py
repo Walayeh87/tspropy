@@ -71,11 +71,12 @@ def plot_datetime_data(
     show_grid: bool = True,
     hover_mode: HoverMode = HoverMode.unified,
     y2_position: float | int = 0.88,
-    input_fig: Figure | None = None,
+    title_margin: int = 230,
     # Params only used with plot_datetime_comparison
     filtered_df: DataFrame | None = None,
     data2plot: Data2Plot = Data2Plot.ALL,
     transparency_of_curves: Transparency | None = None,
+    input_fig: Figure | None = None,
 ) -> Figure:
     """
     Create a Plotly time-series figure for datetime-indexed tabular df with flexible axis mapping,
@@ -141,6 +142,8 @@ def plot_datetime_data(
         input_fig (Figure | None, optional):
             An existing Plotly `Figure` to add traces/shapes to. If None, a new `go.Figure()` is created.
             This enables building layered plots (see `plot_datetime_comparison` usage).
+        title_margin (float | int, optional):
+            Margin (in pixels) for the title.
         filtered_df (DataFrame | None, optional):
             An alternate DataFrame (same columns and columns order as `df`) representing filtered rows
             (for example, the rows removed by some mask). Used in combination with `data2plot` to plot
@@ -286,6 +289,7 @@ def plot_datetime_data(
         legend_fs=font_sizes.legend_fs,
         xy_ticks_fs=font_sizes.xy_ticks_fs,
         grid=show_grid,
+        title_margin=title_margin,
     )
 
     return fig
@@ -952,9 +956,15 @@ def _update_layout(
     label_fs: int | float,
     legend_fs: int | float,
     xy_ticks_fs: int | float,
+    title_margin: int,
     grid: bool,
 ) -> None:
-    plot_title = dict(text=title, font_size=title_fs, y=0.99, x=0.5)
+    title_properties = dict(
+        text=title,
+        font=dict(size=title_fs),
+        y=0.99,
+        x=0.5,
+    )
     x_axis_properties = dict(
         title=dict(text=x_label, font=dict(size=label_fs)),
         showgrid=grid,
@@ -1029,7 +1039,7 @@ def _update_layout(
     fig.update_traces(hovertemplate="<b>%{fullData.name}</b>: %{y:.2f}<extra></extra>")
 
     fig.update_layout(
-        title=plot_title,
+        title=title_properties,
         xaxis=x_axis_properties,
         yaxis=y1_axis_properties,
         yaxis2=y2_axis_properties,
@@ -1044,7 +1054,7 @@ def _update_layout(
         hovermode=hovermode,
         hoverlabel=dict(font_size=16, namelength=1),
         plot_bgcolor="white",  # Background inside the plot area
-        margin=dict(t=230),  # Add top margin for spacing
+        margin=dict(t=title_margin),  # Add top margin for title
         shapes=shapes,
     )
 
@@ -1367,4 +1377,5 @@ def _assign_default_transparency_values(
 def _assign_default_font_size_values(font_sizes: FontSizes | None) -> FontSizes:
     if font_sizes is None:
         font_sizes = FontSizes()
+
     return font_sizes
