@@ -1044,7 +1044,7 @@ def _update_layout(
         hovermode=hovermode,
         hoverlabel=dict(font_size=16, namelength=1),
         plot_bgcolor="white",  # Background inside the plot area
-        margin=dict(t=120),  # Add top margin for spacing
+        margin=dict(t=230),  # Add top margin for spacing
         shapes=shapes,
     )
 
