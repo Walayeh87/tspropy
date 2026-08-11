@@ -1,3 +1,4 @@
+from collections import Counter
 from collections.abc import Hashable
 from dataclasses import dataclass
 from enum import Enum, StrEnum, auto
@@ -7,7 +8,11 @@ from pandas import DataFrame, DatetimeIndex, Series
 
 from src.data_manipulation.custom_objects.location import Location
 from src.data_manipulation.utils.auto_names_modifier import AutoNamesModifier
-from src.data_manipulation.utils.internal_checkers import ensure_boolean_series, ensure_data_has_one_column
+from src.data_manipulation.utils.internal_checkers import (
+    ensure_boolean_series,
+    ensure_data_has_one_column,
+    ensure_valid_timestamp,
+)
 
 
 class Color(Enum):
@@ -116,8 +121,19 @@ class Labels:
     y3_label: str = ""
 
     def __post_init__(self) -> None:
-        if len({self.y1_label, self.y2_label, self.y3_label}) < 3 and (self.y1_label or self.y2_label or self.y3_label):
-            raise ValueError("y1_label, y2_label and y3_label must be different from each other!")
+        duplicate_labels = self.__get_duplicates_excluding_empty(lst=[self.y1_label, self.y2_label, self.y3_label])
+        if duplicate_labels:
+            raise ValueError(
+                f"y1_label, y2_label and y3_label must be different from each other!."
+                f" Duplicate labels found: {set(duplicate_labels)}!"
+            )
+
+    @staticmethod
+    def __get_duplicates_excluding_empty(lst: list) -> list:
+        non_empty = [item for item in lst if item != ""]
+        counts = Counter(non_empty)
+
+        return [item for item, count in counts.items() if count > 1]
 
 
 @dataclass
@@ -145,7 +161,10 @@ class LineWidth:
 
     def __post_init__(self) -> None:
         if self.value <= 0:
-            raise ValueError(f"Width value must be a positive number! Got {self.value} instead!")
+            raise ValueError(f"LineWidth value must be a positive number! Got {self.value} instead!")
+
+        if self.value > 10:
+            raise ValueError("LineWidth value seems to be too large. Select a value less than 10.")
 
     def __lt__(self, other: int | float) -> bool:
         if not isinstance(other, LineWidth):
@@ -241,22 +260,16 @@ class MaskRange:
 
 @dataclass
 class CustomRange:
-    range: list[str]
+    range: list[str | pd.Timestamp]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.range, list):
-            raise TypeError(f"range must be a list of two date strings! Got {type(self.range)} instead!")
-
         if len(self.range) != 2:
             raise ValueError("range must have 2 elements!")
 
         for item in self.range:
-            try:
-                pd.to_datetime(item)
-            except ValueError as e:
-                raise ValueError(f"Invalid range element '{item}'!") from e
+            ensure_valid_timestamp(timestamp=item)
 
-        if pd.to_datetime(self.range[0]) >= pd.to_datetime(self.range[1]):
+        if pd.Timestamp(self.range[0]) >= pd.Timestamp(self.range[1]):
             raise ValueError("The range consists of identical or reversed elements!")
 
 
