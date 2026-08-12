@@ -10,7 +10,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     FontSizes,
     Labels,
     LineStyles,
-    LineWidth,
     LineWidths,
     MaskRange,
     RangeConfig,
@@ -144,7 +143,7 @@ fig8 = plot_datetime_data(
         position=loads_df.index.floor("12h").unique(),
         property={
             VLinePropertyName.COLOR: Color.BLACK,
-            VLinePropertyName.WIDTH: LineWidth(10),
+            VLinePropertyName.WIDTH: 10,
         },
     ),
     show_grid=False,
@@ -157,7 +156,7 @@ fig9 = plot_datetime_data(
     df=loads_df,
     labels=Labels(y1_label="Load in MW"),
     line_styles=LineStyles(line_style1=StyleName.DASH),
-    line_widths=LineWidths(line_width1=LineWidth(3)),
+    line_widths=LineWidths(line_width1=3),
     font_sizes=FontSizes(legend_fs=15),
 )
 # fig9.show()

@@ -164,62 +164,20 @@ class YLimits:
 
 
 @dataclass
-class LineWidth:
-    value: int | float = 1.8
-
-    def __post_init__(self) -> None:
-        if self.value <= 0:
-            raise ValueError(f"LineWidth value must be a positive number! Got {self.value} instead!")
-
-        if self.value > 10:
-            raise ValueError("LineWidth value seems to be too large. Select a value less than 10.")
-
-    def __lt__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value < other.value
-
-    def __le__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value <= other.value
-
-    def __gt__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value > other.value
-
-    def __ge__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value >= other.value
-
-    def __eq__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value == other.value
-
-    def __ne__(self, other: int | float) -> bool:
-        if not isinstance(other, LineWidth):
-            return NotImplemented
-        return self.value != other.value
-
-
-@dataclass
 class LineWidths:
-    line_width1: LineWidth | None = None
-    line_width2: LineWidth | None = None
-    line_width3: LineWidth | None = None
+    line_width1: int | float | None = None
+    line_width2: int | float | None = None
+    line_width3: int | float | None = None
 
     def __post_init__(self) -> None:
-        if self.line_width1 is None:
-            self.line_width1 = LineWidth(value=1.8)
+        if self.line_width1 is not None and self.line_width1 <= 0:
+            raise ValueError(f"LineWidth value must be a positive number! Got {self.line_width1} instead!")
 
-        if self.line_width2 is None:
-            self.line_width2 = LineWidth(value=1.8)
+        if self.line_width2 is not None and self.line_width2 <= 0:
+            raise ValueError(f"LineWidth value must be a positive number! Got {self.line_width2} instead!")
 
-        if self.line_width3 is None:
-            self.line_width3 = LineWidth(value=1.8)
+        if self.line_width3 is not None and self.line_width3 <= 0:
+            raise ValueError(f"LineWidth value must be a positive number! Got {self.line_width3} instead!")
 
 
 @dataclass
@@ -289,7 +247,7 @@ class DefaultValue(Enum):
     # V-Line
     DEFAULT_VLINE_COLOR = Color.RED
     DEFAULT_STYLE = StyleName.SOLID
-    DEFAULT_WIDTH = LineWidth(value=1.8)
+    DEFAULT_WIDTH = 1.8
 
 
 @dataclass
@@ -316,7 +274,7 @@ class FontSizes:
 @dataclass
 class VLineConfig:
     position: DatetimeIndex
-    property: dict[VLinePropertyName, Color | Style | LineWidth] | None = None
+    property: dict[VLinePropertyName, Color | Style | int | float] | None = None
 
     def __post_init__(self) -> None:
         if isinstance(self.property, dict):
@@ -333,8 +291,8 @@ class VLineConfig:
                 if (key == VLinePropertyName.DASH) and not isinstance(value, Style):
                     raise TypeError(f"'{key}' property value must be of type Dash! Got {type(value)} instead!")
 
-                if (key == VLinePropertyName.WIDTH) and not isinstance(value, LineWidth):
-                    raise TypeError(f"'{key}' property value must be of type Width! Got {type(value)} instead!")
+                if (key == VLinePropertyName.WIDTH) and not isinstance(value, (int, float)):
+                    raise TypeError(f"'{key}' property value must be a number! Got {type(value)} instead!")
 
             self.__fill_missing_property_with_default_values()
 
@@ -350,7 +308,7 @@ class VLineConfig:
             if key == VLinePropertyName.DASH:
                 self.property.update({VLinePropertyName.DASH: value.name.lower()})
             if key == VLinePropertyName.WIDTH:
-                self.property.update({VLinePropertyName.WIDTH: value.value})
+                self.property.update({VLinePropertyName.WIDTH: value})
 
     def __fill_missing_property_with_default_values(self) -> None:
         color = self.property.get(VLinePropertyName.COLOR)

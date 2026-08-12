@@ -34,7 +34,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     HoverMode,
     Labels,
     LineStyles,
-    LineWidth,
     LineWidths,
     MapperOfShadedAreasBounds,
     MaskRange,
@@ -126,7 +125,7 @@ def plot_datetime_data(
         line_styles (LineStyles | None, optional):
             Object which holds dash style strings for each axis (line_style1/2/3). Defaults assigned when None.
         line_widths (LineWidths | None, optional):
-            Widths for lines for each axis (LineWidth wrappers). Defaults assigned when None.
+            Widths for lines for each axis. Defaults assigned when None.
         font_sizes (FontSizes | None, optional):
             Font size settings for title, labels, legend and ticks. Defaults assigned when None.
         show_legend (bool, optional):
@@ -549,9 +548,9 @@ def _plot_all_axes(
     line_style1: str,
     line_style2: str,
     line_style3: str,
-    line_width1: LineWidth,
-    line_width2: LineWidth,
-    line_width3: LineWidth,
+    line_width1: int | float,
+    line_width2: int | float,
+    line_width3: int | float,
 ) -> None:
     if len(y1) == 0 and len(y2) == 0 and len(y3) == 0:
         logger.info("Since no axis was specified, all df columns are going to be plotted on the first axis.")
@@ -571,9 +570,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
 
     elif len(y1) != 0 and len(y2) == 0 and len(y3) == 0:
@@ -593,9 +592,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
 
     elif len(y1) != 0 and len(y2) != 0 and len(y3) == 0:
@@ -615,9 +614,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
         _plot_on_axis(
             df=df,
@@ -635,9 +634,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
 
     elif len(y1) != 0 and len(y2) != 0 and len(y3) != 0:
@@ -657,9 +656,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
         _plot_on_axis(
             df=df,
@@ -677,9 +676,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
         _plot_on_axis(
             df=df,
@@ -697,9 +696,9 @@ def _plot_all_axes(
             line_style1=line_style1,
             line_style2=line_style2,
             line_style3=line_style3,
-            line_width1=line_width1.value,
-            line_width2=line_width2.value,
-            line_width3=line_width3.value,
+            line_width1=line_width1,
+            line_width2=line_width2,
+            line_width3=line_width3,
         )
 
     else:

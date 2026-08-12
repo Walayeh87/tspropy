@@ -11,7 +11,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     ColorMapper,
     CustomRange,
     Labels,
-    LineWidth,
     LineWidths,
     MapperOfShadedAreasBounds,
     RangeConfig,
@@ -52,7 +51,7 @@ v_line_config = [
         position=df.index.floor("D").unique(),
         property={
             VLinePropertyName.COLOR: Color.BLACK,
-            VLinePropertyName.WIDTH: LineWidth(value=2),
+            VLinePropertyName.WIDTH: 2,
             VLinePropertyName.DASH: Style(name=StyleName.DASHDOT),
         },
     ),
@@ -60,7 +59,7 @@ v_line_config = [
         position=df.index.floor("3h").unique(),
         property={
             VLinePropertyName.COLOR: Color.RED,
-            VLinePropertyName.WIDTH: LineWidth(value=1),
+            VLinePropertyName.WIDTH: 1,
             VLinePropertyName.DASH: Style(name=StyleName.SOLID),
         },
     ),
@@ -92,7 +91,7 @@ fig1 = plot_datetime_data(
     color_mapper=color_mapper,
     # range_config=range_config,
     v_line_config=v_line_config,
-    line_widths=LineWidths(line_width1=LineWidth(value=2), line_width2=LineWidth(value=1)),
+    line_widths=LineWidths(line_width1=2, line_width2=1),
 )
 
 fig1.show(renderer="browser")
