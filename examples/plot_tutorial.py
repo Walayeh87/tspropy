@@ -18,7 +18,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     StyleName,
     VLineConfig,
     VLinePropertyName,
-    YLimit,
     YLimits,
 )
 from src.plotters.plotly_plotters import plot_datetime_comparison, plot_datetime_data
@@ -41,7 +40,7 @@ fig1 = plot_datetime_data(df=loads_df)
 # Specifying y-limits and colors
 fig2 = plot_datetime_data(
     df=loads_df,
-    y_limits=YLimits(y1_limit=YLimit(range=[-1, 15])),
+    y_limits=YLimits(y1_limit=[-1, 15]),
     color_mapper=[
         ColorMapper(curve_name="Grid Load", color=Color.BLUE),
         ColorMapper(curve_name="PV Generation", color=Color.ORANGE),

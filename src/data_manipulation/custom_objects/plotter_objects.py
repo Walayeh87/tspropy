@@ -137,22 +137,30 @@ class Labels:
 
 
 @dataclass
-class YLimit:
-    range: list[int | float]
+class YLimits:
+    y1_limit: list[int | float] | None = None
+    y2_limit: list[int | float] | None = None
+    y3_limit: list[int | float] | None = None
 
     def __post_init__(self) -> None:
-        if len(self.range) != 2:
-            raise ValueError("y_lim must be a list with two elements!")
+        if self.y1_limit is not None and len(self.y1_limit) != 2:
+            raise ValueError("y1_limit must be a list with two elements!")
 
-        if self.range[0] >= self.range[1]:
-            raise ValueError("y_lim values are reversed or identical!")
+        if self.y2_limit is not None and len(self.y2_limit) != 2:
+            raise ValueError("y2_limit must be a list with two elements!")
 
+        if self.y3_limit is not None and len(self.y3_limit) != 2:
+            raise ValueError("y3_limit must be a list with two elements!")
 
-@dataclass
-class YLimits:
-    y1_limit: YLimit | None = None
-    y2_limit: YLimit | None = None
-    y3_limit: YLimit | None = None
+        # Check if any of the y-limits are reversed or identical
+        if self.y1_limit is not None and self.y1_limit[0] >= self.y1_limit[1]:
+            raise ValueError("y1_limit values are reversed or identical!")
+
+        if self.y2_limit is not None and self.y2_limit[0] >= self.y2_limit[1]:
+            raise ValueError("y2_limit values are reversed or identical!")
+
+        if self.y3_limit is not None and self.y3_limit[0] >= self.y3_limit[1]:
+            raise ValueError("y3_limit values are reversed or identical!")
 
 
 @dataclass

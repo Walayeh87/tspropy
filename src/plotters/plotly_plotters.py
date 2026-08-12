@@ -42,7 +42,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     RangePropertyName,
     Transparency,
     VLineConfig,
-    YLimit,
     YLimits,
 )
 from src.data_manipulation.utils.logging_config import setup_logging
@@ -108,8 +107,7 @@ def plot_datetime_data(
         labels (Labels | None, optional):
             Label texts for x, y1, y2 and y3. Defaults assigned when omitted. See `Labels`.
         y_limits (YLimits | None, optional):
-            Explicit y-axis limits for y1, y2 and y3 (wraps `YLimit` objects) — if omitted, limits
-            are computed from the provided `df`.
+            Explicit y-axis limits for y1, y2 and y3 — if omitted, limits are computed from the provided `df`.
         color_mapper (ColorMapper | list[ColorMapper] | None, optional):
             Color assignment(s) for curves. Can be a single `ColorMapper`, a list thereof, or None.
             If None or incomplete, defaults will be assigned for unlisted curves. ColorMappers must
@@ -264,7 +262,7 @@ def plot_datetime_data(
     )
 
     if y1_limit is None:
-        y1_limit = YLimit(range=[df.min().min(), df.max().max()])
+        y1_limit = [float(df.min().min()), float(df.max().max())]
 
     v_line_and_range_shapes = _get_v_line_and_range_shapes(
         range_configs=range_configs, v_line_configs=v_line_configs, y1_lim=y1_limit, index=df.index
@@ -453,8 +451,10 @@ def _validate_params(
             )
 
 
-def _calculate_y_limit(extended_y: list, y_limit: YLimit | None, original_data: DataFrame) -> YLimit | None:
-    if isinstance(y_limit, YLimit):
+def _calculate_y_limit(
+    extended_y: list, y_limit: list[int | float] | None, original_data: DataFrame
+) -> list[int | float] | None:
+    if isinstance(y_limit, list):
         return y_limit
 
     factor_to_get_curves_away_from_borders = 0.05
@@ -468,12 +468,10 @@ def _calculate_y_limit(extended_y: list, y_limit: YLimit | None, original_data: 
     y_max = np.nanmax(used_data.max())
     y_range = y_max - y_min
 
-    return YLimit(
-        range=[
-            y_min - y_range * factor_to_get_curves_away_from_borders,
-            y_max + y_range * factor_to_get_curves_away_from_borders,
-        ]
-    )
+    return [
+        y_min - y_range * factor_to_get_curves_away_from_borders,
+        y_max + y_range * factor_to_get_curves_away_from_borders,
+    ]
 
 
 def _get_line_style(axis_number: int, line_style1: str, line_style2: str, line_style3: str) -> str:
@@ -522,7 +520,7 @@ def _drop_nan_columns(df: DataFrame, axes: Axes) -> Axes:
 def _get_v_line_and_range_shapes(
     range_configs: list[RangeConfig],
     v_line_configs: list[VLineConfig],
-    y1_lim: YLimit,
+    y1_lim: list[int | float],
     index: DatetimeIndex,
 ) -> list:
     v_line_shapes = _create_shapes_for_v_lines(v_line_configs=v_line_configs)
@@ -791,7 +789,7 @@ def _drop_unused_cols(
     return df[cols2use]
 
 
-def _highlight_range(range_configs: list[RangeConfig], y1_lim: YLimit, index: DatetimeIndex) -> list:
+def _highlight_range(range_configs: list[RangeConfig], y1_lim: list[int | float], index: DatetimeIndex) -> list:
     shapes = []
     for range_config in range_configs:
         if isinstance(range_config.range_type, BuiltinRange):
@@ -850,7 +848,7 @@ def _highlight_range(range_configs: list[RangeConfig], y1_lim: YLimit, index: Da
 
 
 def _create_weekend_range_shapes(
-    index: DatetimeIndex, y1_lim: YLimit, range_properties: dict[RangePropertyName, Color | Transparency]
+    index: DatetimeIndex, y1_lim: list[int | float], range_properties: dict[RangePropertyName, Color | Transparency]
 ) -> list:
     days = index.floor("d").unique()
     saturdays = list(days[days.weekday == 5])
@@ -866,7 +864,7 @@ def _create_weekend_range_shapes(
 
 def _create_holiday_range_shapes(
     index: DatetimeIndex,
-    y1_lim: YLimit,
+    y1_lim: list[int | float],
     range_properties: dict[RangePropertyName, Color | Transparency],
     location: Location,
 ) -> list:
@@ -884,7 +882,7 @@ def _create_holiday_range_shapes(
 
 def _create_day_range_shapes(
     index: DatetimeIndex,
-    y1_lim: YLimit,
+    y1_lim: list[int | float],
     range_properties: dict[RangePropertyName, Color | Transparency],
     days_to_start_highlighting_from: list,
     length_in_days: int,
@@ -896,8 +894,8 @@ def _create_day_range_shapes(
             x1=day + pd.Timedelta(days=length_in_days)
             if day + pd.Timedelta(days=length_in_days) <= index.max()
             else index.max(),
-            y0=y1_lim.range[0],
-            y1=y1_lim.range[1],
+            y0=y1_lim[0],
+            y1=y1_lim[1],
             fillcolor=range_properties.get(RangePropertyName.COLOR),
             opacity=range_properties.get(RangePropertyName.TRANSPARENCY),
             layer="below",
@@ -908,7 +906,7 @@ def _create_day_range_shapes(
 
 
 def _create_am_range_shapes(
-    index: DatetimeIndex, y1_lim: YLimit, range_properties: dict[RangePropertyName, Color | Transparency]
+    index: DatetimeIndex, y1_lim: list[int | float], range_properties: dict[RangePropertyName, Color | Transparency]
 ) -> list:
     is_midnight = index.hour == 0
 
@@ -921,7 +919,7 @@ def _create_am_range_shapes(
 
 
 def _create_pm_range_shapes(
-    index: DatetimeIndex, y1_lim: YLimit, range_properties: dict[RangePropertyName, Color | Transparency]
+    index: DatetimeIndex, y1_lim: list[int | float], range_properties: dict[RangePropertyName, Color | Transparency]
 ) -> list:
     is_noon = index.hour == 12
 
@@ -935,7 +933,7 @@ def _create_pm_range_shapes(
 
 def _create_hour_range_shapes(
     index: DatetimeIndex,
-    y1_lim: YLimit,
+    y1_lim: list[int | float],
     range_properties: dict[RangePropertyName, Color | Transparency],
     hours_to_start_highlighting_from: list,
 ) -> list:
@@ -944,8 +942,8 @@ def _create_hour_range_shapes(
             type="rect",
             x0=point,
             x1=point + pd.Timedelta(hours=12) if point + pd.Timedelta(hours=12) <= index.max() else index.max(),
-            y0=y1_lim.range[0],
-            y1=y1_lim.range[1],
+            y0=y1_lim[0],
+            y1=y1_lim[1],
             fillcolor=range_properties.get(RangePropertyName.COLOR),
             opacity=range_properties.get(RangePropertyName.TRANSPARENCY),
             layer="below",
@@ -962,14 +960,14 @@ def _update_layout(
     title: str | None,
     x_label: str | None,
     y1_label: str | None,
-    y1_limit: YLimit | None,
+    y1_limit: list[int | float],
     y2: list[str | Hashable] | None,
     y2_label: str | None,
-    y2_limit: YLimit | None,
+    y2_limit: list[int | float] | None,
     y2_position: float | int | None,
     y3: list[str | Hashable] | None,
     y3_label: str | None,
-    y3_limit: YLimit | None,
+    y3_limit: list[int | float] | None,
     title_fs: int | float,
     label_fs: int | float,
     legend_fs: int | float,
@@ -1000,7 +998,7 @@ def _update_layout(
     y1_axis_properties = dict(
         title=dict(text=y1_label, font=dict(size=label_fs)),
         showgrid=False if y2 or y3 else grid,
-        range=y1_limit.range if isinstance(y1_limit, YLimit) else None,
+        range=y1_limit if isinstance(y1_limit, list) else None,
         tickfont=dict(size=xy_ticks_fs),
         showline=True,
         linewidth=2,
@@ -1018,7 +1016,7 @@ def _update_layout(
         side="right",
         showgrid=False,
         position=y2_position,
-        range=y2_limit.range if isinstance(y2_limit, YLimit) else None,
+        range=y2_limit if isinstance(y2_limit, list) else None,
         tickfont=dict(size=xy_ticks_fs),
         showline=True,
         linewidth=2,
@@ -1034,7 +1032,7 @@ def _update_layout(
         side="right",
         showgrid=False,
         position=1,
-        range=y3_limit.range if isinstance(y3_limit, YLimit) else None,
+        range=y3_limit if isinstance(y3_limit, list) else None,
         tickfont=dict(size=xy_ticks_fs),
         showline=True,
         linecolor="black",
@@ -1296,7 +1294,7 @@ def _convert_mask_to_ranges(mask: Series[bool] | DataFrame) -> list:
 
 
 def _create_mask_range_shapes(
-    range2highlight: list, range_properties: dict[RangePropertyName, Color | Transparency], y1_lim: YLimit
+    range2highlight: list, range_properties: dict[RangePropertyName, Color | Transparency], y1_lim: list[int | float]
 ) -> list:
     shapes = []
 
@@ -1306,8 +1304,8 @@ def _create_mask_range_shapes(
                 type="rect",
                 x0=start,
                 x1=end,
-                y0=y1_lim.range[0],
-                y1=y1_lim.range[1],
+                y0=y1_lim[0],
+                y1=y1_lim[1],
                 fillcolor=range_properties.get(RangePropertyName.COLOR),
                 opacity=range_properties.get(RangePropertyName.TRANSPARENCY),
                 layer="below",
@@ -1319,15 +1317,15 @@ def _create_mask_range_shapes(
 
 
 def _create_custom_range_shapes(
-    range2highlight: list, range_properties: dict[RangePropertyName, Color | Transparency], y1_lim: YLimit
+    range2highlight: list, range_properties: dict[RangePropertyName, Color | Transparency], y1_lim: list[int | float]
 ) -> list:
     return [
         dict(
             type="rect",
             x0=range2highlight[0],
             x1=range2highlight[1],
-            y0=y1_lim.range[0],
-            y1=y1_lim.range[1],
+            y0=y1_lim[0],
+            y1=y1_lim[1],
             fillcolor=range_properties.get(RangePropertyName.COLOR),
             opacity=range_properties.get(RangePropertyName.TRANSPARENCY),
             layer="below",

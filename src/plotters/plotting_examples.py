@@ -21,7 +21,6 @@ from src.data_manipulation.custom_objects.plotter_objects import (
     Transparency,
     VLineConfig,
     VLinePropertyName,
-    YLimit,
     YLimits,
 )
 from src.plotters.plotly_plotters import plot_datetime_comparison, plot_datetime_data
@@ -89,7 +88,7 @@ fig1 = plot_datetime_data(
     df=df,
     axes=Axes(y1=["col1"], y2=["col2", "col3"], y3=["col4"]),
     labels=Labels(y1_label="Values1", y2_label="Values2", y3_label="Values3"),
-    y_limits=YLimits(y1_limit=None, y2_limit=YLimit(range=[-5, 115]), y3_limit=YLimit(range=[-55, 190])),
+    y_limits=YLimits(y1_limit=None, y2_limit=[-5, 115], y3_limit=[-55, 190]),
     color_mapper=color_mapper,
     # range_config=range_config,
     v_line_config=v_line_config,
