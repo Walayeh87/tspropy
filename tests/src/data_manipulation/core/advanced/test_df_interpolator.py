@@ -4,9 +4,9 @@ import pytest
 from pandas import DataFrame
 
 from src.data_manipulation.core.advanced.df_interpolator import (
-    ColStatistics,
     InterpolationMethod,
     InterpolationResult,
+    NanStatistics,
     interpolate_df,
 )
 from src.data_manipulation.custom_objects.phase_duration import PhaseDuration
@@ -36,7 +36,7 @@ df_with_numerical_and_non_numerical_cols = create_df(
 
 
 @pytest.mark.parametrize(
-    "df, interpolation_limits_mapper, default_interpolation_limit, interpolation_methods_mapper, default_interpolation_method, expected_interpolation_result",
+    "df, limits_mapper, default_limit, methods_mapper, default_method, expected_interpolation_result",
     [
         (
             df_with_no_gaps,
@@ -45,9 +45,9 @@ df_with_numerical_and_non_numerical_cols = create_df(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=DataFrame(),
+                interpolated_df=DataFrame(),
                 interpolation_mask=DataFrame(),
-                interpolation_statistics={},
+                nan_statistics={},
             ),
         ),
         (
@@ -57,9 +57,9 @@ df_with_numerical_and_non_numerical_cols = create_df(
             {"not_existing_col": "linear"},
             "time",
             InterpolationResult(
-                interpolated_data=DataFrame(),
+                interpolated_df=DataFrame(),
                 interpolation_mask=DataFrame(),
-                interpolation_statistics={},
+                nan_statistics={},
             ),
         ),
         (
@@ -69,9 +69,9 @@ df_with_numerical_and_non_numerical_cols = create_df(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=DataFrame(),
+                interpolated_df=DataFrame(),
                 interpolation_mask=DataFrame(),
-                interpolation_statistics={},
+                nan_statistics={},
             ),
         ),
         (
@@ -81,33 +81,33 @@ df_with_numerical_and_non_numerical_cols = create_df(
             {"numerical": "time", "non_numerical": "time"},
             "time",
             InterpolationResult(
-                interpolated_data=DataFrame(),
+                interpolated_df=DataFrame(),
                 interpolation_mask=DataFrame(),
-                interpolation_statistics={},
+                nan_statistics={},
             ),
         ),
     ],
 )
 def test_interpolate_df_with_invalid_column_names(
     df: DataFrame,
-    interpolation_limits_mapper: dict[str, PhaseDuration] | None,
-    default_interpolation_limit: PhaseDuration | None,
-    interpolation_methods_mapper: dict[str, InterpolationMethod] | None,
-    default_interpolation_method: InterpolationMethod,
+    limits_mapper: dict[str, PhaseDuration] | None,
+    default_limit: PhaseDuration | None,
+    methods_mapper: dict[str, InterpolationMethod] | None,
+    default_method: InterpolationMethod,
     expected_interpolation_result: InterpolationResult,
 ) -> None:
     with pytest.raises(ValueError):
         interpolate_df(
             df=df,
-            interpolation_limits_mapper=interpolation_limits_mapper,
-            default_interpolation_limit=default_interpolation_limit,
-            interpolation_methods_mapper=interpolation_methods_mapper,
-            default_interpolation_method=default_interpolation_method,
+            limits_mapper=limits_mapper,
+            default_limit=default_limit,
+            methods_mapper=methods_mapper,
+            default_method=default_method,
         )
 
 
 @pytest.mark.parametrize(
-    "df, interpolation_limits_mapper, default_interpolation_limit, interpolation_methods_mapper, default_interpolation_method, expected_interpolation_result",
+    "df, limits_mapper, default_limit, methods_mapper, default_method, expected_interpolation_result",
     [
         (
             DataFrame(),
@@ -116,9 +116,9 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=DataFrame(),
+                interpolated_df=DataFrame(),
                 interpolation_mask=DataFrame(),
-                interpolation_statistics={},
+                nan_statistics={},
             ),
         ),
         (
@@ -128,13 +128,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=df_with_no_gaps,
+                interpolated_df=df_with_no_gaps,
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, False, False, False, False], "b": [False, False, False, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=0, remaining=0),
-                    "b": ColStatistics(filled=0, remaining=0),
+                nan_statistics={
+                    "a": NanStatistics(original=0, filled=0, remaining=0),
+                    "b": NanStatistics(original=0, filled=0, remaining=0),
                 },
             ),
         ),
@@ -145,13 +145,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=df_with_no_interpolatable_cols,
+                interpolated_df=df_with_no_interpolatable_cols,
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, False, False, False, False], "b": [False, False, False, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=0, remaining=0),
-                    "b": ColStatistics(filled=0, remaining=0),
+                nan_statistics={
+                    "a": NanStatistics(original=0, filled=0, remaining=0),
+                    "b": NanStatistics(original=0, filled=0, remaining=0),
                 },
             ),
         ),
@@ -163,13 +163,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=create_df({"a": [1, 2, 3, 4, 5], "b": [6, np.nan, np.nan, 9, 10]}),
+                interpolated_df=create_df({"a": [1, 2, 3, 4, 5], "b": [6, np.nan, np.nan, 9, 10]}),
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, True, False, False, False], "b": [False, False, False, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=1, remaining=0),
-                    "b": ColStatistics(filled=0, remaining=2),
+                nan_statistics={
+                    "a": NanStatistics(original=1, filled=1, remaining=0),
+                    "b": NanStatistics(original=2, filled=0, remaining=2),
                 },
             ),
         ),
@@ -181,13 +181,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=create_df({"a": [1, 2, 3, 4, 5], "b": [6, 7, 8, 9, 10]}),
+                interpolated_df=create_df({"a": [1, 2, 3, 4, 5], "b": [6, 7, 8, 9, 10]}),
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, True, False, False, False], "b": [False, True, True, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=1, remaining=0),
-                    "b": ColStatistics(filled=2, remaining=0),
+                nan_statistics={
+                    "a": NanStatistics(original=1, filled=1, remaining=0),
+                    "b": NanStatistics(original=2, filled=2, remaining=0),
                 },
             ),
         ),
@@ -199,13 +199,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=create_df({"a": [1, 2, 3, 4, 5], "b": [6, 7, 8, 9, 10]}),
+                interpolated_df=create_df({"a": [1, 2, 3, 4, 5], "b": [6, 7, 8, 9, 10]}),
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, True, False, False, False], "b": [False, True, True, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=1, remaining=0),
-                    "b": ColStatistics(filled=2, remaining=0),
+                nan_statistics={
+                    "a": NanStatistics(original=1, filled=1, remaining=0),
+                    "b": NanStatistics(original=2, filled=2, remaining=0),
                 },
             ),
         ),
@@ -217,13 +217,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=df_with_long_gaps,
+                interpolated_df=df_with_long_gaps,
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, False, False, False, False], "b": [False, False, False, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=0, remaining=2),
-                    "b": ColStatistics(filled=0, remaining=2),
+                nan_statistics={
+                    "a": NanStatistics(original=2, filled=0, remaining=2),
+                    "b": NanStatistics(original=2, filled=0, remaining=2),
                 },
             ),
         ),
@@ -235,13 +235,13 @@ def test_interpolate_df_with_invalid_column_names(
             None,
             "time",
             InterpolationResult(
-                interpolated_data=df_with_no_gaps,
+                interpolated_df=df_with_no_gaps,
                 interpolation_mask=create_interpolation_mask(
                     column_mapper={"a": [False, True, True, False, False], "b": [False, True, True, False, False]}
                 ),
-                interpolation_statistics={
-                    "a": ColStatistics(filled=2, remaining=0),
-                    "b": ColStatistics(filled=2, remaining=0),
+                nan_statistics={
+                    "a": NanStatistics(original=2, filled=2, remaining=0),
+                    "b": NanStatistics(original=2, filled=2, remaining=0),
                 },
             ),
         ),
@@ -249,23 +249,23 @@ def test_interpolate_df_with_invalid_column_names(
 )
 def test_interpolate_df(
     df: DataFrame,
-    interpolation_limits_mapper: dict[str, PhaseDuration] | None,
-    default_interpolation_limit: PhaseDuration | None,
-    interpolation_methods_mapper: dict[str, InterpolationMethod] | None,
-    default_interpolation_method: InterpolationMethod,
+    limits_mapper: dict[str, PhaseDuration] | None,
+    default_limit: PhaseDuration | None,
+    methods_mapper: dict[str, InterpolationMethod] | None,
+    default_method: InterpolationMethod,
     expected_interpolation_result: InterpolationResult,
 ) -> None:
     interpolation_result = interpolate_df(
         df=df,
-        interpolation_limits_mapper=interpolation_limits_mapper,
-        default_interpolation_limit=default_interpolation_limit,
-        interpolation_methods_mapper=interpolation_methods_mapper,
-        default_interpolation_method=default_interpolation_method,
+        limits_mapper=limits_mapper,
+        default_limit=default_limit,
+        methods_mapper=methods_mapper,
+        default_method=default_method,
     )
 
     pd.testing.assert_frame_equal(
-        interpolation_result.interpolated_data,
-        expected_interpolation_result.interpolated_data,
+        interpolation_result.interpolated_df,
+        expected_interpolation_result.interpolated_df,
         check_dtype=False,
     )
     pd.testing.assert_frame_equal(

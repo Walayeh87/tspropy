@@ -16,16 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ColStatistics:
+class NanStatistics:
+    original: int
     filled: int
     remaining: int
 
 
 @dataclass
 class InterpolationResult:
-    interpolated_data: DataFrame | Series
-    interpolation_mask: DataFrame | Series
-    interpolation_statistics: dict[str, ColStatistics]
+    interpolated_df: DataFrame
+    interpolation_mask: DataFrame
+    nan_statistics: dict[str, NanStatistics]
 
 
 InterpolationMethod = Literal[
@@ -52,10 +53,10 @@ InterpolationMethod = Literal[
 
 def interpolate_df(
     df: DataFrame,
-    interpolation_limits_mapper: dict[str, PhaseDuration] | None = None,
-    default_interpolation_limit: PhaseDuration | None = None,
-    interpolation_methods_mapper: dict[str, InterpolationMethod] | None = None,
-    default_interpolation_method: InterpolationMethod = "time",
+    limits_mapper: dict[str, PhaseDuration] | None = None,
+    default_limit: PhaseDuration | None = None,
+    methods_mapper: dict[str, InterpolationMethod] | None = None,
+    default_method: InterpolationMethod = "time",
 ) -> InterpolationResult:
     """
     Interpolate missing values (NaN) in numeric columns of a DataFrame.
@@ -74,29 +75,29 @@ def interpolate_df(
     Args:
         df: Input pandas DataFrame. The function copies the DataFrame internally
             and does not mutate the original.
-        interpolation_limits_mapper: Optional dict mapping column names -> PhaseDuration.
+        limits_mapper: Optional dict mapping column names -> PhaseDuration.
             For each specified column, gaps longer than the provided PhaseDuration
             will not be filled (they remain NaN).
-        default_interpolation_limit: Default PhaseDuration applied to columns that
-            are not listed in `interpolation_limits_mapper`. If None, no duration
+        default_limit: Default PhaseDuration applied to columns that
+            are not listed in `limits_mapper`. If None, no duration
             restriction is applied for those columns.
-        interpolation_methods_mapper: Optional dict mapping column names -> interpolation method
+        methods_mapper: Optional dict mapping column names -> interpolation method
             (one of the literal values defined in `InterpolationMethod`). Columns not listed
-            will use `default_interpolation_method`.
-        default_interpolation_method: Interpolation method to use for columns not
-            present in `interpolation_methods_mapper`. Defaults to "time".
+            will use `default_method`.
+        default_method: Interpolation method to use for columns not
+            present in `methods_mapper`. Defaults to "time".
 
     Returns:
         InterpolationResult: includes:
-          - interpolated_data (DataFrame): DataFrame with numeric columns interpolated.
+          - interpolated_df (DataFrame): DataFrame with numeric columns interpolated.
           - interpolation_mask (DataFrame of booleans): True where the original value
               was NaN and now is non-NaN (i.e., values that were interpolated).
-          - interpolation_statistics (dict[str, ColStatistics]): per-column statistics
+          - nan_statistics (dict[str, NanStatistics]): per-column statistics
               with counts for filled and remaining NaNs.
 
     Raises:
-        ValueError: If a column name provided in `interpolation_limits_mapper` or
-            `interpolation_methods_mapper` does not exist in `df` or is not numeric
+        ValueError: If a column name provided in `limits_mapper` or
+            `methods_mapper` does not exist in `df` or is not numeric
             (i.e., not interpolatable).
 
     Notes:
@@ -105,15 +106,15 @@ def interpolate_df(
       the returned result will contain the original DataFrame and statistics reflect
       zero or the unchanged gap counts.
     """
-    if isinstance(interpolation_limits_mapper, dict):
-        for col_name in interpolation_limits_mapper.keys():
+    if isinstance(limits_mapper, dict):
+        for col_name in limits_mapper.keys():
             if col_name not in df.columns:
                 raise ValueError(
                     f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}"
                 )
 
-    if isinstance(interpolation_methods_mapper, dict):
-        for col_name in interpolation_methods_mapper.keys():
+    if isinstance(methods_mapper, dict):
+        for col_name in methods_mapper.keys():
             if col_name not in df.columns:
                 raise ValueError(
                     f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}"
@@ -121,16 +122,16 @@ def interpolate_df(
 
     interpolatable_columns = _get_interpolatable_columns(df=df)
 
-    if isinstance(interpolation_limits_mapper, dict):
-        for column in interpolation_limits_mapper.keys():
+    if isinstance(limits_mapper, dict):
+        for column in limits_mapper.keys():
             if column not in interpolatable_columns:
                 raise ValueError(
                     f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
                     f" {list(interpolatable_columns)}"
                 )
 
-    if isinstance(interpolation_methods_mapper, dict):
-        for column in interpolation_methods_mapper.keys():
+    if isinstance(methods_mapper, dict):
+        for column in methods_mapper.keys():
             if column not in interpolatable_columns:
                 raise ValueError(
                     f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
@@ -144,44 +145,44 @@ def interpolate_df(
         logger.info(
             "No interpolation can be performed since the passed data is empty! The data passed is returned unchanged!"
         )
-        interpolation_statistics = _create_interpolation_statistics(df=df, interpolated_df=df)
+        nan_statistics = _create_nan_statistics(df=df, interpolated_df=df)
 
         return InterpolationResult(
-            interpolated_data=df,
+            interpolated_df=df,
             interpolation_mask=interpolation_mask,
-            interpolation_statistics=interpolation_statistics,
+            nan_statistics=nan_statistics,
         )
 
     if len(interpolatable_columns) == 0:
         logger.warning("No interpolatable columns found. The data passed is returned unchanged!")
-        interpolation_statistics = _create_interpolation_statistics(df=df, interpolated_df=df)
+        nan_statistics = _create_nan_statistics(df=df, interpolated_df=df)
 
         return InterpolationResult(
-            interpolated_data=df,
+            interpolated_df=df,
             interpolation_mask=interpolation_mask,
-            interpolation_statistics=interpolation_statistics,
+            nan_statistics=nan_statistics,
         )
 
     if df.isna().sum().sum() == 0:
         logger.info("The entered df has no gaps. The data passed is returned unchanged!")
-        interpolation_statistics = _create_interpolation_statistics(df=df, interpolated_df=df)
+        nan_statistics = _create_nan_statistics(df=df, interpolated_df=df)
 
         return InterpolationResult(
-            interpolated_data=df,
+            interpolated_df=df,
             interpolation_mask=interpolation_mask,
-            interpolation_statistics=interpolation_statistics,
+            nan_statistics=nan_statistics,
         )
 
     methods2use = _get_methods2use(
         columns=list(df),
-        interpolation_methods_mapper=interpolation_methods_mapper,
-        default_interpolation_method=default_interpolation_method,
+        methods_mapper=methods_mapper,
+        default_method=default_method,
     )
 
     limits2use = _get_limits2use(
         columns=list(df),
-        interpolation_limits_mapper=interpolation_limits_mapper,
-        default_interpolation_limit=default_interpolation_limit,
+        limits_mapper=limits_mapper,
+        default_limit=default_limit,
     )
 
     interpolated_data_as_dict = {
@@ -199,12 +200,12 @@ def interpolate_df(
 
     interpolation_mask = _create_interpolation_mask(df=df, interpolated_df=interpolated_df)
 
-    interpolation_statistics = _create_interpolation_statistics(df=df, interpolated_df=interpolated_df)
+    nan_statistics = _create_nan_statistics(df=df, interpolated_df=interpolated_df)
 
     return InterpolationResult(
-        interpolated_data=interpolated_df,
+        interpolated_df=interpolated_df,
         interpolation_mask=interpolation_mask,
-        interpolation_statistics=interpolation_statistics,
+        nan_statistics=nan_statistics,
     )
 
 
@@ -212,17 +213,17 @@ def _create_interpolation_mask(df: DataFrame, interpolated_df: DataFrame) -> Dat
     return df.isna() & interpolated_df.notna()
 
 
-def _create_interpolation_statistics(df: DataFrame, interpolated_df: DataFrame) -> dict[str, ColStatistics]:
-    interpolation_statistics = {}
+def _create_nan_statistics(df: DataFrame, interpolated_df: DataFrame) -> dict[str, NanStatistics]:
+    nan_statistics = {}
     for col in df.columns:
-        original_gaps = df[col].isna().sum().sum()
-        remaining_gaps = interpolated_df[col].isna().sum().sum()
+        original_gaps = int(df[col].isna().sum().sum())
+        remaining_gaps = int(interpolated_df[col].isna().sum().sum())
         interpolated_gaps = original_gaps - remaining_gaps
 
-        col_statistics = ColStatistics(filled=interpolated_gaps, remaining=remaining_gaps)
-        interpolation_statistics[col] = col_statistics
+        col_statistics = NanStatistics(filled=interpolated_gaps, remaining=remaining_gaps, original=original_gaps)
+        nan_statistics[col] = col_statistics
 
-    return interpolation_statistics
+    return nan_statistics
 
 
 def _resort_df_cols(interpolated_df: DataFrame, original_cols: list) -> DataFrame:
@@ -252,24 +253,24 @@ def _override_originally_long_gaps_with_nans(
 
 def _get_limits2use(
     columns: list,
-    interpolation_limits_mapper: dict[str, PhaseDuration] | None,
-    default_interpolation_limit: PhaseDuration | None,
+    limits_mapper: dict[str, PhaseDuration] | None,
+    default_limit: PhaseDuration | None,
 ) -> dict:
-    limits2use = {column: default_interpolation_limit for column in columns}
-    if interpolation_limits_mapper is not None:
-        limits2use.update(interpolation_limits_mapper)
+    limits2use = {column: default_limit for column in columns}
+    if limits_mapper is not None:
+        limits2use.update(limits_mapper)
 
     return limits2use
 
 
 def _get_methods2use(
     columns: list,
-    interpolation_methods_mapper: dict[str, InterpolationMethod] | None,
-    default_interpolation_method: InterpolationMethod,
+    methods_mapper: dict[str, InterpolationMethod] | None,
+    default_method: InterpolationMethod,
 ) -> dict:
-    methods2use = {column: default_interpolation_method for column in columns}
-    if interpolation_methods_mapper is not None:
-        methods2use.update(interpolation_methods_mapper)
+    methods2use = {column: default_method for column in columns}
+    if methods_mapper is not None:
+        methods2use.update(methods_mapper)
 
     return methods2use
 
@@ -297,8 +298,8 @@ if __name__ == "__main__":
 
     interpolation_result = interpolate_df(
         df=DataFrame(),
-        interpolation_limits_mapper=None,
-        default_interpolation_limit=PhaseDuration("1min"),
-        interpolation_methods_mapper=None,
-        default_interpolation_method="time",
+        limits_mapper=None,
+        default_limit=PhaseDuration("1min"),
+        methods_mapper=None,
+        default_method="time",
     )
