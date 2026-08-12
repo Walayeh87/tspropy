@@ -16,8 +16,8 @@ df = pd.read_csv(
 # The following plot illustrates the numerical columns that show missing data.
 print(df.head())
 
-fig1 = plot_datetime_data(df=df, labels=Labels(y1_label="Load in MW"), title="Original Dataset")
-fig1.show()
+fig1 = plot_datetime_data(df=df, labels=Labels(y1_label="Load in MW"), title="Original Dataset with Missing Values")
+fig1.show(renderer="browser")
 
 # pd.interpolate vs tspropy.interpolate_df
 # AI should fill in this as a table. The InterpolationResult object should be explained, too.
@@ -30,9 +30,9 @@ interpolation_result1 = interpolate_df(df=df)
 fig2 = plot_datetime_data(
     df=interpolation_result1.interpolated_df,
     labels=Labels(y1_label="Load in MW"),
-    title="No limit & time method",
+    title="Default Interpolation (No Limit, time Method)",
 )
-fig2.show()
+fig2.show(renderer="browser")
 
 # Comparison between the dataset before and after the interpolation
 print(df.loc["2017-12-28 13:30":"2017-12-28 15:00"])
@@ -60,9 +60,9 @@ interpolation_result2 = interpolate_df(
 fig3 = plot_datetime_data(
     df=interpolation_result2.interpolated_df,
     labels=Labels(y1_label="Load in MW"),
-    title="1h limit for PV Generation & time method for both",
+    title="Interpolation with 1h Limit for PV Generation",
 )
-fig3.show()
+fig3.show(renderer="browser")
 
 # Check the nan statistics
 print(interpolation_result2.nan_statistics)
@@ -79,6 +79,6 @@ interpolation_result3 = interpolate_df(
 fig4 = plot_datetime_data(
     df=interpolation_result3.interpolated_df,
     labels=Labels(y1_label="Load in MW"),
-    title="No limit & different methods",
+    title="Interpolation with Different Methods (Linear for PV, Cubic for Grid)",
 )
-fig4.show()
+fig4.show(renderer="browser")
