@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from pandas import DataFrame, DatetimeIndex, Series
+from pandas.core.dtypes.common import is_numeric_dtype
 from plotly.graph_objs import Figure
 
 from src.data_manipulation.core.basic.converters.series_and_frame import convert_frame2series
@@ -333,6 +334,15 @@ def plot_datetime_comparison(
     return fig2
 
 
+def _get_numerical_columns(df: DataFrame) -> list:
+    numerical_cols = []
+    for column in df.columns:
+        if is_numeric_dtype(df[column]):
+            numerical_cols.append(column)
+
+    return numerical_cols
+
+
 def _assign_default_line_widths(widths: LineWidths | None) -> LineWidths:
     if widths is None:
         widths = LineWidths()
@@ -390,6 +400,14 @@ def _validate_params(
     color_mappers: list[ColorMapper],
     range_configs: list[RangeConfig],
 ) -> None:
+    numerical_cols = _get_numerical_columns(df=df)
+    if len(numerical_cols) < len(df.columns):
+        non_numerical_cols = [col for col in df.columns if col not in numerical_cols]
+        df = df[numerical_cols]
+        if all(item in axes.y1 for item in non_numerical_cols):
+            axes.y1 = [col for col in axes.y1 if col not in non_numerical_cols]
+        logger.warning(f"Non-numerical columns {non_numerical_cols} were removed from the DataFrame; ")
+
     if len(axes.y1 + axes.y2 + axes.y3) > len(list(Color)):
         raise ValueError(
             f"plot_datetime_data can only plot {len(list(Color))} curves."
