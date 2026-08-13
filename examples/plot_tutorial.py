@@ -34,7 +34,7 @@ loads_cols = ["Total Site Load", "Grid Load", "PV Generation"]
 loads_df = df[loads_cols]
 
 fig1 = plot_datetime_data(df=loads_df)
-fig1.show(renderer="browser")
+# fig1.show(renderer="browser")
 
 # Specifying y-limits and colors
 fig2 = plot_datetime_data(
@@ -46,7 +46,7 @@ fig2 = plot_datetime_data(
         # "Total Site Load" is not specified -> a random color will be selected.
     ],
 )
-fig2.show(renderer="browser")
+# fig2.show(renderer="browser")
 
 # Specifying curves to plot on different axes, a title and labels
 fig3 = plot_datetime_data(
@@ -60,7 +60,7 @@ fig3 = plot_datetime_data(
     title="Load and Price Data",
     labels=Labels(
         y1_label="Load in MW",
-        y2_label="Price in €/MW",
+        y2_label="Price in €/MWh",
     ),
 )
 fig3.show(renderer="browser")
@@ -86,7 +86,7 @@ fig4 = plot_datetime_data(
         ),
     ],
 )
-fig4.show(renderer="browser")
+# fig4.show(renderer="browser")
 
 # B- Custom ranges
 # If a specific range needs to be highlighted to illustrate its importance, RangeConfig can be used
@@ -100,7 +100,7 @@ fig5 = plot_datetime_data(
         property={RangePropertyName.COLOR: Color.CORAL},
     ),
 )
-fig5.show(renderer="browser")
+# fig5.show(renderer="browser")
 
 # C- Mask ranges
 # If a specific pattern in the data needs to be highlighted, a boolean mask can be used to define the range.
@@ -115,7 +115,7 @@ fig6 = plot_datetime_data(
         property={RangePropertyName.COLOR: Color.ORANGE},
     ),
 )
-fig6.show(renderer="browser")
+# fig6.show(renderer="browser")
 
 # A combination of different rang types can be used on one plot
 fig7 = plot_datetime_data(
@@ -131,7 +131,7 @@ fig7 = plot_datetime_data(
         ),
     ],
 )
-fig7.show(renderer="browser")
+# fig7.show(renderer="browser")
 
 # 2- Vertical lines
 # It is used to emphasize specific points in time, or simply to split the plot using a uniform intervals.
@@ -148,7 +148,7 @@ fig8 = plot_datetime_data(
     ),
     show_grid=False,
 )
-fig8.show(renderer="browser")
+# fig8.show(renderer="browser")
 
 # Secondary features
 # plot_datetime_data offers many of secondary features for customizing the appearance and behavior of the plot
@@ -159,7 +159,7 @@ fig9 = plot_datetime_data(
     line_widths=LineWidths(line_width1=3),
     font_sizes=FontSizes(legend_fs=15),
 )
-fig9.show(renderer="browser")
+# fig9.show(renderer="browser")
 
 
 # plot_datetime_comparison
@@ -172,4 +172,4 @@ fig10 = plot_datetime_comparison(
     df=loads_df,
     filtered_df=loads_df[mask_high_site_loads],
 )
-fig10.show(renderer="browser")
+# fig10.show(renderer="browser")
