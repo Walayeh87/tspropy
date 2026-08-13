@@ -45,6 +45,7 @@ min_in_h = 60
 calculate_energy = lambda power: sum(power * data_freq_in_min / min_in_h)
 df["Phase Energy"] = df.groupby(high_consumption_phase_nr)["Total Site Load"].transform(func=calculate_energy)
 
+# With this technique, we are controlling not only the high consumption phases, but also the low consumption ones in one go.
 
 fig2 = plot_datetime_data(
     df=df,
@@ -63,7 +64,9 @@ fig2 = plot_datetime_data(
 # fig2.show(renderer="browser")
 
 # get_mask_phase_durations() use case
+# Introduction about the function and its importance
 # get_mask_phase_durations() is helpful for filtering data by its phase durations
+# In ths example, we will get rid of the phases shorter than 2h.
 load_phase_durations = get_mask_phase_durations(mask=mask_high_consumption)
 mask_long_phases = load_phase_durations > pd.Timedelta("2h")
 
