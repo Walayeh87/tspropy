@@ -17,7 +17,7 @@ from src.data_manipulation.custom_objects.plotter_objects import (
 from src.plotters.plotly_plotters import plot_datetime_data
 
 df = pd.read_csv(
-    r"../../../data/load_and_price.csv",
+    r"data/load_and_price.csv",
     index_col="datetime",
     parse_dates=True,
 )
@@ -82,6 +82,6 @@ fig3 = plot_datetime_data(
         range_type=MaskRange(range=mask_long_phases),
         property={RangePropertyName.COLOR: energy_color},
     ),
-    title="Phase-Based Energy Consumption",
+    title="Phase-Based Energy Consumption (Only Long Phases)",
 )
 fig3.show(renderer="browser")
