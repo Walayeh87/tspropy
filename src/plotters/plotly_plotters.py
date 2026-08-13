@@ -983,7 +983,7 @@ def _update_layout(
     x_axis_properties = dict(
         title=dict(text=x_label, font=dict(size=label_fs)),
         showgrid=grid,
-        domain=[0, y2_position] if y2 or y3 else [0, 1],
+        domain=[0, y2_position],  # if y2 or y3 else [0, 1],
         tickfont=dict(size=xy_ticks_fs),
         showline=True,
         linewidth=2,
