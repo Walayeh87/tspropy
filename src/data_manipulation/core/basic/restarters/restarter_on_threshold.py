@@ -2,7 +2,6 @@ import dataclasses
 import logging
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame, Series
 
 from src.data_manipulation.core.basic.converters.series_and_frame import convert_frame2series
@@ -68,22 +67,3 @@ def restart_cumsum_on_threshold(data: DataFrame | Series, threshold: int | float
         restarted_cumsum=Series(restarted_cumsum, index=data.index),
         restarts_mask=Series(restarts_mask, index=data.index),
     )
-
-
-if __name__ == "__main__":
-    freq = "1min"
-    n = 100
-
-    # time index
-    idx = pd.date_range("2024-01-01", periods=n, freq=freq)
-
-    # create positive / negative phases
-    phases = np.repeat([1, 1, -1, 1, 1], [20, 15, 25, 20, 20])
-
-    # base signal
-    signal = phases * (2 + 0.5 * np.random.randn(n))
-
-    df = DataFrame({"value": signal}, index=idx)
-    df.loc[df.index[10], "value"] = np.nan
-
-    result = restart_cumsum_on_threshold(data=df["value"], threshold=10)

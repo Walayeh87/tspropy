@@ -52,9 +52,3 @@ def create_weekend_mask(index: DatetimeIndex) -> Series:
     is_weekend = index.weekday >= 5
 
     return Series(is_weekend, index=index)
-
-
-if __name__ == "__main__":
-    idx = pd.date_range(start="2024-01-01", end="2024-01-31", freq="D")
-    holiday_mask = create_holiday_mask(idx, Location(country_code="DE"))
-    weekend_mask = create_weekend_mask(idx)

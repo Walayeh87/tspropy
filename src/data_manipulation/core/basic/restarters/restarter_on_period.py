@@ -1,7 +1,5 @@
 import dataclasses
 
-import numpy as np
-import pandas as pd
 from pandas import DataFrame, Series, Timedelta
 
 from src.data_manipulation.core.basic.converters.series_and_frame import convert_frame2series, convert_series2frame
@@ -73,23 +71,3 @@ def _validate_params(data: Series | DataFrame, period: str | Timedelta) -> None:
 
         if Timedelta(period) <= Timedelta(index_freq):
             raise ValueError("The 'period' must be greater than the data index frequency!")
-
-
-if __name__ == "__main__":
-    freq = "1min"
-    n = 100
-
-    # time index
-    idx = pd.date_range("2024-01-01", periods=n, freq=freq)
-
-    # create positive / negative phases
-    phases = np.repeat([1, 1, 1, 1, 1], [20, 15, 25, 20, 20])
-
-    # base signal
-    signal = phases * (2 + 0.5 * np.random.randn(n))
-
-    df = DataFrame({"value": signal}, index=idx)
-
-    result = restart_cumsum_on_period(data=df, period="15min")
-    restarted_cumsum = result.restarted_cumsum
-    restarts_mask = result.restarts_mask

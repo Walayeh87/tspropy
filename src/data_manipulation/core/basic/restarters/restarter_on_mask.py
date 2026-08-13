@@ -2,7 +2,6 @@ import dataclasses
 import logging
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame, Series
 
 from src.data_manipulation.core.basic.converters.series_and_frame import convert_frame2series, convert_series2frame
@@ -49,26 +48,3 @@ def restart_cumsum_on_mask(data: Series | DataFrame, mask: Series[bool]) -> Rest
         restarted_cumsum=df["restarted_cumsum"],
         restarts_mask=df["restarts_mask"],
     )
-
-
-if __name__ == "__main__":
-    # parameters
-    n = 100
-    freq = "1min"
-
-    # time index
-    idx = pd.date_range("2024-01-01", periods=n, freq=freq)
-
-    # col1: constant 1
-    col1 = np.ones(n)
-
-    # col2: fluctuates between -3 and 3
-    phases = np.repeat([3, -3, 3, -3, 3], [20, 15, 25, 20, 20])
-    noise = 0.3 * np.random.randn(n)
-    col2 = phases + noise
-
-    df = pd.DataFrame({"col1": col1, "col2": col2}, index=idx)
-
-    mask = df["col2"] > 0
-
-    restarted_cumsum = restart_cumsum_on_mask(data=df["col1"], mask=mask)

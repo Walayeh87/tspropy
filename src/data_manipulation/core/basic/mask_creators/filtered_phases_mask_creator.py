@@ -1,8 +1,6 @@
 import numpy as np
-import pandas as pd
 from pandas import DataFrame, Series
 
-from src.data_manipulation.core.basic.restarters.restarter_on_mask import restart_cumsum_on_mask
 from src.data_manipulation.utils.internal_checkers import ensure_data_has_one_column
 
 
@@ -52,25 +50,3 @@ def _validate_params_values(data: Series | DataFrame, filtered_data: Series | Da
             "The 'data' is empty but 'filtered_data' is not empty! "
             "The 'filtered_data' index must be a subset of the 'data' index!"
         )
-
-
-if __name__ == "__main__":
-    freq = "1min"
-    n = 100
-
-    # time index
-    idx = pd.date_range("2024-01-01", periods=n, freq=freq)
-
-    # create positive / negative phases
-    phases = np.repeat([1, 1, 1, 1, 1], [20, 15, 25, 20, 20])
-
-    # base signal
-    signal = phases * (2 + 0.5 * np.random.randn(n))
-
-    df = DataFrame({"value": signal}, index=idx)
-
-    filtered_df = df.loc[df["value"] > 2]
-
-    mask = create_filtered_phases_mask(data=df, filtered_data=filtered_df)
-
-    result = restart_cumsum_on_mask(data=df, mask=mask)

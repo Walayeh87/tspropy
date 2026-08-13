@@ -282,24 +282,3 @@ def _get_interpolatable_columns(df: DataFrame) -> list:
             interpolatable_cols.append(column)
 
     return interpolatable_cols
-
-
-if __name__ == "__main__":
-    # Example usage
-    date_range = pd.date_range(start="2023-01-01", periods=10, freq="min")
-    data = {
-        "a": [1, np.nan, np.nan, 4, 5, np.nan, 7, 8, np.nan, 10],
-        "b": [np.nan, 2, 3, np.nan, 6, 7, np.nan, 9, 10, 11],
-        "e": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11],
-        "c": ["bla", "blu", "blg", "blh", "bli", "blj", "blk", "bll", "blm", "bln"],
-        "d": ["bla", "blu", "blg", "blh", "bli", "blj", "blk", "bll", "blm", "bln"],
-    }
-    df = DataFrame(data=data, index=date_range)
-
-    interpolation_result = interpolate_df(
-        df=DataFrame(),
-        limits_mapper=None,
-        default_limit=PhaseDuration("1min"),
-        methods_mapper=None,
-        default_method="time",
-    )

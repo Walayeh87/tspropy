@@ -36,8 +36,3 @@ def recalculate_phase_nr(phase_nr_series: Series) -> Series:
     new_phase_nr.iloc[0] = 1
 
     return new_phase_nr.cumsum()
-
-
-if __name__ == "__main__":
-    test_series = Series([0, 0, 2, 2, 4, 5, 5])
-    print(recalculate_phase_nr(phase_nr_series=test_series))
