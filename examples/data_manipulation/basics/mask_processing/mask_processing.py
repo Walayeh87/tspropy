@@ -34,7 +34,7 @@ fig1 = plot_datetime_data(
 )
 # fig1.show(renderer="browser")
 
-# get_mask_phase_numbers() use case 1
+# get_mask_phase_numbers() use case
 # Introduction about the function and its importance
 mask_high_consumption = df["Total Site Load"] > 8  # MW
 
@@ -82,29 +82,3 @@ fig3 = plot_datetime_data(
     title="Phase-Based Energy Consumption",
 )
 fig3.show(renderer="browser")
-
-# get_mask_phase_numbers() use case 2
-# Introduction about the function and its importance
-df["Energy"] = df["Total Site Load"] * data_freq_in_min / min_in_h
-df["Energy Cost"] = df["Day-Ahead Price"] * df["Energy"]
-df["Phase Energy Cost"] = df.groupby(high_consumption_phase_nr)["Energy Cost"].cumsum()
-
-# Since 3 axes are used here, only 1 day will be illustrated for clarity
-fig4 = plot_datetime_data(
-    df=df.loc["2017-12-28"],
-    axes=Axes(y1="Total Site Load", y2="Day-Ahead Price", y3="Phase Energy Cost"),
-    labels=Labels(y1_label="Load in MW", y2_label="Price in €/MWh", y3_label="Energy Cost in €"),
-    color_mapper=[
-        ColorMapper("Total Site Load", site_load_color),
-        ColorMapper("Day-Ahead Price", Color.BLACK),
-        ColorMapper("Phase Energy Cost", Color.BLUE),
-    ],
-    range_config=RangeConfig(
-        range_type=MaskRange(range=mask_high_consumption),
-        property={RangePropertyName.COLOR: energy_color},
-    ),
-    title="Phase-Based Energy Cost",
-)
-# fig4.show(renderer="browser")
-
-
