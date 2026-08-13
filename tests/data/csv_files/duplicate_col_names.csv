@@ -1,0 +1,4 @@
+datetime,different_content,different_content,first_identical,first_identical,second_identical,second_identical
+2025-01-01 08:30:00,10.5,7, 5,5,88,88
+2025-01-01 09:30:00,20.0,7.3,6,6,88,88
+2025-01-01 10:30:00,15.75,7,7,7,88,88
