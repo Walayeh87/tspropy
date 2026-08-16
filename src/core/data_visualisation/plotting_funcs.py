@@ -100,7 +100,8 @@ def plot_datetime_data(
             represents a curve that can be plotted on one of the axes.
         axes (Axes | None, optional):
             Object that specifies which columns go to y1, y2 and y3 axes. If None, a default `Axes`
-            is created and all columns are plotted on y1. See `src.data_manipulation.custom_objects.plotter_objects.Axes`.
+            is created and all columns are plotted on y1.
+            See `src.data_manipulation.custom_objects.plotter_objects.Axes`.
         title (str, optional):
             Title text for the plot.
         labels (Labels | None, optional):
@@ -297,8 +298,8 @@ def plot_datetime_comparison(
     df: DataFrame,
     filtered_df: DataFrame,
     transparency_of_filtered_phases: Transparency | None = None,
-    *args,
-    **kwargs,
+    *args,  # noqa: ANN002
+    **kwargs,  # noqa: ANN003
 ) -> Figure:
     if transparency_of_filtered_phases is None:
         transparency_of_filtered_phases = Transparency(value=0.4)
@@ -310,7 +311,7 @@ def plot_datetime_comparison(
         transparency_of_curves=transparency_of_filtered_phases,
         show_legend=False,
         hover_mode=HoverMode.closest,
-        *args,
+        *args,  # noqa: B026
         **kwargs,
     )
 
@@ -324,7 +325,7 @@ def plot_datetime_comparison(
         input_fig=fig1,
         show_legend=True,
         hover_mode=HoverMode.closest,
-        *args,
+        *args,  # noqa: B026
         **kwargs,
     )
 
