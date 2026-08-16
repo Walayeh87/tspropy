@@ -18,7 +18,7 @@ class ColNames(AutoNamesModifier):
     PHASE_NUMBERS = auto()
 
 
-def validate_and_process_mask(func):
+def validate_and_process_mask(func):  # noqa: ANN001, ANN201
     """
     Decorator that validates and preprocesses boolean mask inputs for mask processing functions.
 
@@ -85,7 +85,7 @@ def validate_and_process_mask(func):
     """
 
     @functools.wraps(func)
-    def wrapper(mask: Series | DataFrame, *args, **kwargs):
+    def wrapper(mask: Series | DataFrame, *args, **kwargs):  # noqa: ANN002, ANN003, ANN202
         mask = convert_frame2series(data=mask)
 
         if mask.empty:
@@ -256,7 +256,8 @@ def get_mask_phase_durations(mask: Series | DataFrame) -> Series:
         dtype: timedelta64[ns]
 
         >>> # If the index has no inferable frequency (e.g. irregular timestamps), a Series of NaT is returned:
-        >>> mask = Series([True, True], index=[pd.Timestamp("2023-01-01"), pd.Timestamp("2023-01-01") + pd.Timedelta(seconds=37)])
+        >>> mask =
+         Series([True, True], index=[pd.Timestamp("2023-01-01"), pd.Timestamp("2023-01-01") + pd.Timedelta(seconds=37)])
         >>> get_mask_phase_durations(mask)
         2023-01-01 00:00:00   NaT
         2023-01-01 01:00:00   NaT
