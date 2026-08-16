@@ -28,7 +28,7 @@ jobs:
       - name: Run tests
         run: pytest -v
 
-  formatting:
+  formatting_and_linting:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -50,3 +50,4 @@ jobs:
         run: |
           ruff check --select I .
           ruff format --check .
+          ruff check .
