@@ -106,37 +106,38 @@ def interpolate_df(
       the returned result will contain the original DataFrame and statistics reflect
       zero or the unchanged gap counts.
     """
-    if isinstance(limits_mapper, dict):
-        for col_name in limits_mapper.keys():
-            if col_name not in df.columns:
-                raise ValueError(
-                    f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}"
-                )
+    if limits_mapper is None:
+        limits_mapper = {}
 
-    if isinstance(methods_mapper, dict):
-        for col_name in methods_mapper.keys():
-            if col_name not in df.columns:
-                raise ValueError(
-                    f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}"
-                )
+    if methods_mapper is None:
+        methods_mapper = {}
+
+    if default_limit is None:
+        default_limit = PhaseDuration(value=pd.Timedelta(df.index.max() - df.index.min()))
+
+    for col_name in limits_mapper.keys():
+        if col_name not in df.columns:
+            raise ValueError(f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}")
+
+    for col_name in methods_mapper.keys():
+        if col_name not in df.columns:
+            raise ValueError(f"Column '{col_name}' is not a column of the entered df. Valid columns are: {list(df)}")
 
     interpolatable_columns = _get_interpolatable_columns(df=df)
 
-    if isinstance(limits_mapper, dict):
-        for column in limits_mapper.keys():
-            if column not in interpolatable_columns:
-                raise ValueError(
-                    f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
-                    f" {list(interpolatable_columns)}"
-                )
+    for column in limits_mapper.keys():
+        if column not in interpolatable_columns:
+            raise ValueError(
+                f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
+                f" {list(interpolatable_columns)}"
+            )
 
-    if isinstance(methods_mapper, dict):
-        for column in methods_mapper.keys():
-            if column not in interpolatable_columns:
-                raise ValueError(
-                    f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
-                    f" {list(interpolatable_columns)}"
-                )
+    for column in methods_mapper.keys():
+        if column not in interpolatable_columns:
+            raise ValueError(
+                f"Column '{column}' is not interpolatable. Valid interpolatable columns are:"
+                f" {list(interpolatable_columns)}"
+            )
 
     df = df.copy()
 
@@ -231,9 +232,6 @@ def _resort_df_cols(interpolated_df: DataFrame, original_cols: list) -> DataFram
 
 
 def interpolate_series(series: Series, method: InterpolationMethod, longest_gap2fill: PhaseDuration | None) -> Series:
-    if longest_gap2fill is None:
-        return series.interpolate(method=method, limit_direction="forward", limit_area="inside")
-
     interpolated_series = series.interpolate(method=method, limit_direction="forward", limit_area="inside")
     interpolated_series = _override_originally_long_gaps_with_nans(
         series=series, interpolated_series=interpolated_series, longest_gap2fill=longest_gap2fill
@@ -253,24 +251,22 @@ def _override_originally_long_gaps_with_nans(
 
 def _get_limits2use(
     columns: list,
-    limits_mapper: dict[str, PhaseDuration] | None,
-    default_limit: PhaseDuration | None,
+    limits_mapper: dict[str, PhaseDuration],
+    default_limit: PhaseDuration,
 ) -> dict:
     limits2use = {column: default_limit for column in columns}
-    if limits_mapper is not None:
-        limits2use.update(limits_mapper)
+    limits2use.update(limits_mapper)
 
     return limits2use
 
 
 def _get_methods2use(
     columns: list,
-    methods_mapper: dict[str, InterpolationMethod] | None,
+    methods_mapper: dict[str, InterpolationMethod],
     default_method: InterpolationMethod,
 ) -> dict:
     methods2use = {column: default_method for column in columns}
-    if methods_mapper is not None:
-        methods2use.update(methods_mapper)
+    methods2use.update(methods_mapper)
 
     return methods2use
 
