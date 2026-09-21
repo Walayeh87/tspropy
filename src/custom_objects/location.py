@@ -6,7 +6,7 @@ import pycountry
 @dataclass
 class Location:
     country_code: str  # case-insensitive, e.g. "DE" or "de"
-    subdivision: str | None = None  # case-sensitive!
+    subdivision: str = ""  # case-sensitive!
 
     def __post_init__(self) -> None:
         self.country_code = self.country_code.upper()
@@ -15,7 +15,7 @@ class Location:
         if self.country_code not in country_codes:
             raise ValueError(f"'{self.country_code}' is an invalid country code.")
 
-        if self.subdivision is not None:
+        if len(self.subdivision) > 0:
             subdivision_names = _get_subdivision_names(country_code=self.country_code)
             if self.subdivision not in subdivision_names:
                 raise ValueError(
