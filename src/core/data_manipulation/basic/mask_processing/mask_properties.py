@@ -3,7 +3,6 @@ import logging
 from enum import auto
 
 import numpy as np
-import pandas as pd
 from pandas import DataFrame, Series
 
 from src.core.data_manipulation.basic.converters.series_and_frame import convert_frame2series
@@ -271,12 +270,8 @@ def get_mask_phase_durations(mask: Series | DataFrame) -> Series:
     phase_durations_as_ints.name = None  # To remove the existing name "ints", which is incorrect ...
 
     index_freq = infer_index_freq(index=phase_durations_as_ints.index)
-    if index_freq is not None:
-        return phase_durations_as_ints * index_freq
-    else:
-        logger.warning("Index frequency cannot be inferred. Returning Series of NaT.")
-        mask_phase_durations = Series(data=[pd.NaT] * len(phase_durations_as_ints), index=phase_durations_as_ints.index)
-        return mask_phase_durations
+
+    return phase_durations_as_ints * index_freq
 
 
 @validate_and_process_mask

@@ -66,8 +66,5 @@ def _validate_params(data: Series | DataFrame, period: str | Timedelta) -> None:
     if not data.empty and len(data) > 1:
         index_freq = infer_index_freq(index=data.index)
 
-        if index_freq is None:
-            raise ValueError("Could not infer the frequency of the data index!")
-
         if Timedelta(period) <= Timedelta(index_freq):
             raise ValueError("The 'period' must be greater than the data index frequency!")

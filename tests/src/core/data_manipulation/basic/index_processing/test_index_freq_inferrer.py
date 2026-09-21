@@ -6,7 +6,7 @@ from src.core.data_manipulation.basic.index_processing.index_freq_inferrer impor
     InferIndexFreqDefaults,
     infer_index_freq,
 )
-from src.utils.custom_errors import InvalidFreqError
+from src.utils.custom_errors import FreqInferenceError, InvalidFreqError
 
 
 def create_dt_index(start: str = "2020-10-10", periods: int = 20, freq: str = "1h") -> DatetimeIndex:
@@ -24,13 +24,13 @@ def create_dt_index_with_gaps(start: str = "2020-10-10", periods: int = 20, freq
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance + 5,
             InferIndexFreqDefaults.accepted_ratio,
-            None,
+            Timedelta(0),
         ),
         (
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance - 8,
             InferIndexFreqDefaults.accepted_ratio,
-            None,
+            Timedelta(0),
         ),
     ],
 )
@@ -51,17 +51,17 @@ def test_infer_index_freq_with_invalid_freq_tolerance(
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance,
             InferIndexFreqDefaults.accepted_ratio + 100,
-            None,
+            Timedelta(0),
         ),
         (
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance,
             InferIndexFreqDefaults.accepted_ratio - 100,
-            None,
+            Timedelta(0),
         ),
     ],
 )
-def test_infer_index_freq_with_accepted_ratio_tolerance(
+def test_infer_index_freq_with_invalid_accepted_ratio(
     index: DatetimeIndex,
     freq_tolerance: float | int,
     accepted_ratio: float | int,
@@ -79,25 +79,25 @@ def test_infer_index_freq_with_accepted_ratio_tolerance(
             InferIndexFreqDefaults.freq_tolerance,
             InferIndexFreqDefaults.accepted_ratio,
             "invalid_offset",
-            None,
+            Timedelta(0),
         ),
         (
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance,
             InferIndexFreqDefaults.accepted_ratio,
             "-5s",
-            None,
+            Timedelta(0),
         ),
         (
             create_dt_index(freq="1h"),
             InferIndexFreqDefaults.freq_tolerance,
             InferIndexFreqDefaults.accepted_ratio,
             "s",
-            None,
+            Timedelta(0),
         ),
     ],
 )
-def test_infer_index_freq_with_accepted_round_offset(
+def test_infer_index_freq_with_invalid_round_offset(
     index: DatetimeIndex,
     freq_tolerance: float | int,
     accepted_ratio: float | int,
@@ -141,10 +141,8 @@ def test_infer_index_freq_with_regular_indices(
 
 
 def test_infer_index_freq_with_too_short_indices() -> None:
-    index = pd.DatetimeIndex([])
-    index_freq = infer_index_freq(index)
-
-    assert index_freq is None
+    with pytest.raises(FreqInferenceError):
+        infer_index_freq(pd.DatetimeIndex([]))
 
 
 @pytest.mark.parametrize(
@@ -199,7 +197,7 @@ def test_infer_index_freq_with_slightly_irregular_indices(
 
 
 @pytest.mark.parametrize(
-    "chaotic_index, expected_result",
+    "chaotic_index",
     [
         (
             pd.DatetimeIndex(
@@ -213,14 +211,12 @@ def test_infer_index_freq_with_slightly_irregular_indices(
                     "2020-01-07 09:05:00",
                 ]
             ),
-            None,
         )
     ],
 )
-def test_infer_index_freq_with_chaotic_index(chaotic_index: DatetimeIndex, expected_result: None) -> None:
-    index_freq = infer_index_freq(chaotic_index)
-
-    assert index_freq == expected_result
+def test_infer_index_freq_with_chaotic_index(chaotic_index: DatetimeIndex) -> None:
+    with pytest.raises(FreqInferenceError):
+        infer_index_freq(chaotic_index)
 
 
 @pytest.mark.parametrize(
@@ -250,7 +246,7 @@ def test_infer_index_freq_with_some_nat(
 
 
 @pytest.mark.parametrize(
-    "nat_index, expected_freq",
+    "nat_index",
     [
         (
             pd.DatetimeIndex(
@@ -261,21 +257,16 @@ def test_infer_index_freq_with_some_nat(
                     pd.NaT,
                 ]
             ),
-            None,
         )
     ],
 )
-def test_infer_index_freq_with_nat_index(
-    nat_index: DatetimeIndex,
-    expected_freq: Timedelta,
-) -> None:
-    index_freq = infer_index_freq(nat_index)
-
-    assert index_freq == expected_freq
+def test_infer_index_freq_with_nat_index(nat_index: DatetimeIndex) -> None:
+    with pytest.raises(FreqInferenceError):
+        infer_index_freq(nat_index)
 
 
 @pytest.mark.parametrize(
-    "index, expected_freq",
+    "index",
     [
         (
             pd.DatetimeIndex(
@@ -288,14 +279,9 @@ def test_infer_index_freq_with_nat_index(
                     "2020-01-01 00:00:00",
                 ]
             ),
-            None,
         )
     ],
 )
-def test_infer_index_freq_with_repetitive_timestamp(
-    index: DatetimeIndex,
-    expected_freq: Timedelta,
-) -> None:
-    index_freq = infer_index_freq(index)
-
-    assert index_freq == expected_freq
+def test_infer_index_freq_with_repetitive_timestamp(index: DatetimeIndex) -> None:
+    with pytest.raises(FreqInferenceError):
+        infer_index_freq(index)

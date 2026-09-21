@@ -32,3 +32,7 @@ class InvalidTimedeltaError(Exception):
 
 class ExecutionError(Exception):
     """It is used when an error occurs during the execution of the main.py/cli.py."""
+
+
+class FreqInferenceError(Exception):
+    """It is used when the frequency cannot be inferred."""

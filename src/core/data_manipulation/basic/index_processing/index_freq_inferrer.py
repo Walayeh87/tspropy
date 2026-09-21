@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from pandas import DatetimeIndex, Timedelta, TimedeltaIndex
 
+from src.utils.custom_errors import FreqInferenceError
 from src.utils.internal_checkers import ensure_positive_freq
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ def infer_index_freq(
     freq_tolerance: float | int = InferIndexFreqDefaults.freq_tolerance,
     accepted_ratio: float | int = InferIndexFreqDefaults.accepted_ratio,
     round_offset: str = InferIndexFreqDefaults.round_offset,
-) -> Timedelta | None:
+) -> Timedelta:
     """Finds the frequency of a basically uniform/regular index by looking at the most frequent index delta. It can
     deal with irregular indexes and indexes with gaps.
 
@@ -38,21 +39,22 @@ def infer_index_freq(
     Returns
     -------
 
-    Timedelta: The inferred frequency of the index, or None if the index is too short, chaotic, or includes only nans.
+    Timedelta: The inferred frequency of the index. If it is Timedelta(0), it means the frequency could not be inferred.
+
+    Raises
+    -------
+    FreqInferenceError: If the frequency cannot be inferred due to irregularities in the index.
     """
     _validate_params(accepted_ratio=accepted_ratio, freq_tolerance=freq_tolerance, round_offset=round_offset)
 
     if len(index) <= 1:
-        logger.warning(
-            "Could not infer index frequency since the provided dataset is either empty or consists of only one"
-            " row. None is returned"
+        raise FreqInferenceError(
+            "Could not infer index frequency since the provided dataset is either empty or consists of only one row."
         )
-        return None
 
     index_without_nans = index.dropna()
     if len(index_without_nans) == 0:
-        logger.warning("Could not infer index frequency since the index contains only NaN values. None is returned.")
-        return None
+        raise FreqInferenceError("Index contains only NaN values.")
 
     if not index_without_nans.is_monotonic_increasing:
         index_without_nans = index.sort_values()
@@ -62,11 +64,10 @@ def infer_index_freq(
     no_positive_deltas = (~mask_of_positive_deltas).all()
 
     if no_positive_deltas:
-        logger.warning(
+        raise FreqInferenceError(
             f"Could not infer index frequency since the index contains mainly one unique timestamp:"
-            f" ''{index_without_nans[0]}''. None is returned."
+            f" ''{index_without_nans[0]}''."
         )
-        return None
 
     positive_median = get_positive_median(deltas=deltas, mask_of_positive_deltas=mask_of_positive_deltas)
     mask_tolerated_median = get_mask_of_tolerated_median(
@@ -77,8 +78,7 @@ def infer_index_freq(
     valid_deltas = mask_tolerated_median.sum()
 
     if valid_deltas < accepted_ratio * total_deltas:
-        logger.warning("Could not infer index frequency since the index is a chaotic/irregular one. None is returned.")
-        return None
+        raise FreqInferenceError("Could not infer index frequency since the index is a chaotic/irregular one.")
 
     index_freq = deltas[mask_tolerated_median].mean()
 

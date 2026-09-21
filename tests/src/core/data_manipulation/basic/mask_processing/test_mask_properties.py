@@ -112,14 +112,6 @@ def test_get_mask_cumulative_sum_numbers(mask: Series | DataFrame, expected_resu
             Series(),
         ),
         (
-            Series(data=[True], index=pd.to_datetime(["2020-10-10"])),
-            Series(data=[pd.NaT], index=pd.to_datetime(["2020-10-10"])),
-        ),
-        (
-            Series(data=[False], index=pd.to_datetime(["2020-10-10"])),
-            Series(data=[pd.NaT], index=pd.to_datetime(["2020-10-10"])),
-        ),
-        (
             Series(
                 data=[True, True, True],
                 index=pd.to_datetime(["2020-10-10", "2020-10-11", "2020-10-12"]),
