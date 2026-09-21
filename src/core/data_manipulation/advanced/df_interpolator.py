@@ -8,7 +8,7 @@ from pandas import DataFrame, Series
 from pandas.api.types import is_numeric_dtype
 
 from src.core.data_manipulation.basic.mask_processing.mask_properties import get_mask_phase_durations
-from src.custom_objects.phase_duration import PhaseDuration
+from src.custom_objects.phase_duration import PositiveTimedelta
 from src.utils.logging_config import setup_logging
 
 setup_logging()
@@ -53,8 +53,8 @@ InterpolationMethod = Literal[
 
 def interpolate_df(
     df: DataFrame,
-    limits_mapper: dict[str, PhaseDuration] | None = None,
-    default_limit: PhaseDuration | None = None,
+    limits_mapper: dict[str, PositiveTimedelta] | None = None,
+    default_limit: PositiveTimedelta | None = None,
     methods_mapper: dict[str, InterpolationMethod] | None = None,
     default_method: InterpolationMethod = "time",
 ) -> InterpolationResult:
@@ -113,7 +113,7 @@ def interpolate_df(
         methods_mapper = {}
 
     if default_limit is None:
-        default_limit = PhaseDuration(value=pd.Timedelta(df.index.max() - df.index.min()))
+        default_limit = PositiveTimedelta(value=pd.Timedelta(df.index.max() - df.index.min()))
 
     for col_name in limits_mapper.keys():
         if col_name not in df.columns:
@@ -231,7 +231,9 @@ def _resort_df_cols(interpolated_df: DataFrame, original_cols: list) -> DataFram
     return interpolated_df[original_cols]
 
 
-def interpolate_series(series: Series, method: InterpolationMethod, longest_gap2fill: PhaseDuration | None) -> Series:
+def interpolate_series(
+    series: Series, method: InterpolationMethod, longest_gap2fill: PositiveTimedelta | None
+) -> Series:
     interpolated_series = series.interpolate(method=method, limit_direction="forward", limit_area="inside")
     interpolated_series = _override_originally_long_gaps_with_nans(
         series=series, interpolated_series=interpolated_series, longest_gap2fill=longest_gap2fill
@@ -241,7 +243,7 @@ def interpolate_series(series: Series, method: InterpolationMethod, longest_gap2
 
 
 def _override_originally_long_gaps_with_nans(
-    series: Series, interpolated_series: Series, longest_gap2fill: PhaseDuration
+    series: Series, interpolated_series: Series, longest_gap2fill: PositiveTimedelta
 ) -> Series:
     gap_dur = get_mask_phase_durations(mask=series.isna())
     interpolated_series[gap_dur > longest_gap2fill.value] = np.nan
@@ -251,8 +253,8 @@ def _override_originally_long_gaps_with_nans(
 
 def _get_limits2use(
     columns: list,
-    limits_mapper: dict[str, PhaseDuration],
-    default_limit: PhaseDuration,
+    limits_mapper: dict[str, PositiveTimedelta],
+    default_limit: PositiveTimedelta,
 ) -> dict:
     limits2use = {column: default_limit for column in columns}
     limits2use.update(limits_mapper)

@@ -9,7 +9,7 @@ from src.core.data_manipulation.advanced.df_interpolator import (
     NanStatistics,
     interpolate_df,
 )
-from src.custom_objects.phase_duration import PhaseDuration
+from src.custom_objects.phase_duration import PositiveTimedelta
 
 
 def create_df(column_mapper: dict, start: str = "2023-01-01", end: str = "2023-01-05", freq: str = "1D") -> DataFrame:
@@ -40,7 +40,7 @@ df_with_numerical_and_non_numerical_cols = create_df(
     [
         (
             df_with_no_gaps,
-            {"not_existing_col": PhaseDuration("1D"), "b": PhaseDuration("1D")},
+            {"not_existing_col": PositiveTimedelta("1D"), "b": PositiveTimedelta("1D")},
             "1min",
             None,
             "time",
@@ -52,7 +52,7 @@ df_with_numerical_and_non_numerical_cols = create_df(
         ),
         (
             df_with_no_gaps,
-            {"a": PhaseDuration("1D"), "b": PhaseDuration("1D")},
+            {"a": PositiveTimedelta("1D"), "b": PositiveTimedelta("1D")},
             "1min",
             {"not_existing_col": "linear"},
             "time",
@@ -66,8 +66,8 @@ df_with_numerical_and_non_numerical_cols = create_df(
 )
 def test_interpolate_df_with_not_existing_column_names(
     df: DataFrame,
-    limits_mapper: dict[str, PhaseDuration] | None,
-    default_limit: PhaseDuration | None,
+    limits_mapper: dict[str, PositiveTimedelta] | None,
+    default_limit: PositiveTimedelta | None,
     methods_mapper: dict[str, InterpolationMethod] | None,
     default_method: InterpolationMethod,
     expected_interpolation_result: InterpolationResult,
@@ -87,7 +87,7 @@ def test_interpolate_df_with_not_existing_column_names(
     [
         (
             df_with_numerical_and_non_numerical_cols,
-            {"numerical": PhaseDuration("1D"), "non_numerical": PhaseDuration("1D")},
+            {"numerical": PositiveTimedelta("1D"), "non_numerical": PositiveTimedelta("1D")},
             None,
             None,
             "time",
@@ -113,8 +113,8 @@ def test_interpolate_df_with_not_existing_column_names(
 )
 def test_interpolate_df_with_non_interpolatable_columns(
     df: DataFrame,
-    limits_mapper: dict[str, PhaseDuration] | None,
-    default_limit: PhaseDuration | None,
+    limits_mapper: dict[str, PositiveTimedelta] | None,
+    default_limit: PositiveTimedelta | None,
     methods_mapper: dict[str, InterpolationMethod] | None,
     default_method: InterpolationMethod,
     expected_interpolation_result: InterpolationResult,
@@ -147,7 +147,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         (
             df_with_no_gaps,
             None,
-            PhaseDuration("1D"),
+            PositiveTimedelta("1D"),
             None,
             "time",
             InterpolationResult(
@@ -164,7 +164,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         (
             df_with_no_interpolatable_cols,
             None,
-            PhaseDuration("1D"),
+            PositiveTimedelta("1D"),
             None,
             "time",
             InterpolationResult(
@@ -182,7 +182,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         (
             df_with_gaps,
             None,
-            PhaseDuration("1D"),
+            PositiveTimedelta("1D"),
             None,
             "time",
             InterpolationResult(
@@ -199,7 +199,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         # Short and long gaps will be interpolated
         (
             df_with_gaps,
-            {"a": PhaseDuration("1D"), "b": PhaseDuration("2D")},
+            {"a": PositiveTimedelta("1D"), "b": PositiveTimedelta("2D")},
             None,
             None,
             "time",
@@ -217,7 +217,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         # Short and long gaps will be interpolated (by using very long limits)
         (
             df_with_gaps,
-            {"a": PhaseDuration("5D"), "b": PhaseDuration("20D")},
+            {"a": PositiveTimedelta("5D"), "b": PositiveTimedelta("20D")},
             None,
             None,
             "time",
@@ -235,7 +235,7 @@ def test_interpolate_df_with_non_interpolatable_columns(
         # Limits are shorter than gaps -> no interpolation
         (
             df_with_long_gaps,
-            {"a": PhaseDuration("1D"), "b": PhaseDuration("1D")},
+            {"a": PositiveTimedelta("1D"), "b": PositiveTimedelta("1D")},
             None,
             None,
             "time",
@@ -272,8 +272,8 @@ def test_interpolate_df_with_non_interpolatable_columns(
 )
 def test_interpolate_df(
     df: DataFrame,
-    limits_mapper: dict[str, PhaseDuration] | None,
-    default_limit: PhaseDuration | None,
+    limits_mapper: dict[str, PositiveTimedelta] | None,
+    default_limit: PositiveTimedelta | None,
     methods_mapper: dict[str, InterpolationMethod] | None,
     default_method: InterpolationMethod,
     expected_interpolation_result: InterpolationResult,
