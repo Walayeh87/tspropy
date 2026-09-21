@@ -62,6 +62,29 @@ df_with_numerical_and_non_numerical_cols = create_df(
                 nan_statistics={},
             ),
         ),
+    ],
+)
+def test_interpolate_df_with_not_existing_column_names(
+    df: DataFrame,
+    limits_mapper: dict[str, PhaseDuration] | None,
+    default_limit: PhaseDuration | None,
+    methods_mapper: dict[str, InterpolationMethod] | None,
+    default_method: InterpolationMethod,
+    expected_interpolation_result: InterpolationResult,
+) -> None:
+    with pytest.raises(ValueError):
+        interpolate_df(
+            df=df,
+            limits_mapper=limits_mapper,
+            default_limit=default_limit,
+            methods_mapper=methods_mapper,
+            default_method=default_method,
+        )
+
+
+@pytest.mark.parametrize(
+    "df, limits_mapper, default_limit, methods_mapper, default_method, expected_interpolation_result",
+    [
         (
             df_with_numerical_and_non_numerical_cols,
             {"numerical": PhaseDuration("1D"), "non_numerical": PhaseDuration("1D")},
@@ -88,7 +111,7 @@ df_with_numerical_and_non_numerical_cols = create_df(
         ),
     ],
 )
-def test_interpolate_df_with_invalid_column_names(
+def test_interpolate_df_with_non_interpolatable_columns(
     df: DataFrame,
     limits_mapper: dict[str, PhaseDuration] | None,
     default_limit: PhaseDuration | None,
