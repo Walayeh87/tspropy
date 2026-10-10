@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tspropy"
+authors= [{name = "Abdul Malek Walayeh"}]
+version = "0.1.0"
+description = "Time-series processing, analysis, and visualization tools in Python"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "plotly",
+    "holidays",
+    "pycountry",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/Walayeh87/tspropy"
+Repository = "https://github.com/Walayeh87/tspropy"
+Issues = "https://github.com/Walayeh87/tspropy/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
